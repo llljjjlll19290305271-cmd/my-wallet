@@ -1,0 +1,260 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f5f6f2">
+<title>我的小金库 · My Wallet</title>
+<style>
+:root{--green:#237b58;--bg:#f5f6f2;--card:#fff;--text:#202820;--muted:#879087;--red:#dc665e}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:22px 15px 45px}
+.app{max-width:680px;margin:auto}
+header{display:flex;justify-content:space-between;align-items:center;margin:8px 0 22px}
+h1{font-size:25px;margin:0}
+.sub{color:var(--muted);font-size:13px;margin-top:5px}
+.pill{background:#e3eee7;color:var(--green);padding:7px 12px;border-radius:20px;font-size:12px}
+.card{background:var(--card);border-radius:18px;padding:19px;margin-bottom:15px;box-shadow:0 3px 15px #263c2410}
+.month{display:flex;justify-content:space-between;align-items:center}
+.month input{border:0;font-size:16px;font-weight:700;background:transparent;color:var(--text)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:17px}
+.stat{background:#f5f7f3;border-radius:13px;padding:12px 8px;min-width:0}
+.stat small{color:var(--muted);font-size:12px}
+.stat strong{display:block;margin-top:9px;font-size:17px;overflow-wrap:anywhere}
+.income{color:var(--green)}.expense{color:var(--red)}
+h2{font-size:17px;margin:0 0 15px}
+label{font-size:13px;color:#626c62;display:block;margin:12px 0 6px}
+input,select,button{font:inherit}
+input,select{width:100%;padding:12px;border:1px solid #e2e7df;border-radius:10px;background:white;color:var(--text);outline:none}
+input:focus,select:focus{border-color:var(--green)}
+.types{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px}
+.type{border:1px solid #e2e7df;background:#fff;padding:11px;border-radius:10px;color:#657064}
+.type.active{border-color:var(--green);background:#eaf3ed;color:var(--green);font-weight:700}
+button{cursor:pointer}
+.primary{background:var(--green);color:white;border:0;padding:13px;border-radius:11px;width:100%;font-weight:700;margin-top:15px}
+.secondary{background:#edf2ed;color:var(--green);border:0;padding:10px 13px;border-radius:9px}
+.danger{background:#fff0ef;color:#c34e47;border:0;padding:8px 10px;border-radius:8px}
+.goalrow{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.goalrow strong{font-size:19px}
+.progress{height:10px;background:#edf0eb;border-radius:10px;overflow:hidden;margin:14px 0 8px}
+.bar{height:100%;background:var(--green);width:0%;border-radius:10px;transition:.3s}
+.muted{color:var(--muted);font-size:12px}
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.entry{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 0;border-bottom:1px solid #edf0eb}
+.entry:last-child{border:0}
+.entryleft{display:flex;gap:11px;align-items:center;min-width:0}
+.emoji{width:39px;height:39px;display:grid;place-items:center;background:#f2f5f0;border-radius:12px;font-size:19px;flex-shrink:0}
+.entryname{font-weight:600;font-size:14px;overflow-wrap:anywhere}
+.entrydate{font-size:11px;color:var(--muted);margin-top:4px}
+.entryright{text-align:right;flex-shrink:0}
+.amount{font-weight:700;font-size:15px}
+.actions{display:flex;gap:6px;margin-top:5px;justify-content:flex-end}
+.actions button{border:0;background:none;color:#758075;font-size:12px;padding:3px}
+.empty{text-align:center;color:var(--muted);padding:25px 5px;font-size:13px}
+.tools{display:flex;gap:9px;flex-wrap:wrap}
+.tools button{flex:1;min-width:120px}
+.hidden{display:none}
+.footer{text-align:center;color:#a0a79e;font-size:11px;margin:25px 0}
+@media(max-width:390px){.stats{gap:5px}.stat{padding:10px 6px}.stat strong{font-size:14px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+ <div><h1>💰 我的小金库</h1><div class="sub">认真记录每一笔，慢慢积累小幸福</div></div>
+ <span class="pill">My Wallet</span>
+</header>
+
+<section class="card">
+ <div class="month">
+  <div><div class="muted">账单月份</div><input id="month" type="month"></div>
+  <span>📅</span>
+ </div>
+ <div class="stats">
+  <div class="stat"><small>本月收入</small><strong class="income" id="totalIn">¥0.00</strong></div>
+  <div class="stat"><small>本月支出</small><strong class="expense" id="totalOut">¥0.00</strong></div>
+  <div class="stat"><small>本月结余</small><strong id="balance">¥0.00</strong></div>
+ </div>
+</section>
+
+<section class="card">
+ <h2>🎯 我的存钱目标</h2>
+ <div class="goalrow"><div><div class="muted">目标金额</div><strong id="goalText">¥10,000.00</strong></div>
+ <button class="secondary" onclick="setGoal()">修改目标</button></div>
+ <div class="progress"><div class="bar" id="goalBar"></div></div>
+ <div class="goalrow"><span class="muted" id="goalProgress">已存 ¥0.00</span><strong id="goalPercent">0%</strong></div>
+ <div class="muted" style="margin-top:9px">存款进度根据你记录的收入减去支出计算。也可以在下面记录存钱相关收支。</div>
+</section>
+
+<section class="card">
+ <h2>✍️ 记一笔</h2>
+ <div class="types">
+  <button class="type active" id="incomeBtn" onclick="setType('收入')">＋ 收入</button>
+  <button class="type" id="expenseBtn" onclick="setType('支出')">－ 支出</button>
+ </div>
+ <label>金额（元）</label>
+ <input id="amount" type="number" min="0.01" step="0.01" placeholder="例如：5000">
+ <label>分类</label>
+ <select id="category"></select>
+ <label>备注</label>
+ <input id="note" maxlength="60" placeholder="例如：每月工资、午餐">
+ <label>日期</label>
+ <input id="date" type="date">
+ <button class="primary" id="saveBtn" onclick="saveEntry()">保存这笔账目</button>
+ <button class="secondary hidden" id="cancelEdit" style="width:100%;margin-top:8px" onclick="cancelEditing()">取消编辑</button>
+</section>
+
+<section class="card">
+ <h2>📒 账单明细</h2>
+ <div class="filters">
+  <select id="filterType" onchange="render()">
+   <option value="全部">全部类型</option><option value="收入">收入</option><option value="支出">支出</option>
+  </select>
+  <select id="filterCategory" onchange="render()"><option value="全部">全部分类</option></select>
+ </div>
+ <div id="entries"></div>
+</section>
+
+<section class="card">
+ <h2>📦 数据备份与恢复</h2>
+ <p class="muted">建议定期导出备份。换手机或更换浏览器时，可以导入备份恢复账目。</p>
+ <div class="tools">
+  <button class="secondary" onclick="exportData()">⬇ 导出备份</button>
+  <button class="secondary" onclick="document.getElementById('importFile').click()">⬆ 导入备份</button>
+ </div>
+ <input class="hidden" id="importFile" type="file" accept=".json,application/json" onchange="importData(event)">
+ <p class="muted" style="margin-top:14px">数据保存在当前设备的浏览器中。请妥善保管备份文件，不要公开分享。</p>
+</section>
+<div class="footer">我的小金库 · 让每一份努力都有记录 ❤️</div>
+</div>
+
+<script>
+const KEY='myWalletDataV1';
+const categories={
+ '收入':['工资','奖金','兼职','红包','理财收益','其他收入'],
+ '支出':['餐饮','房租','交通','购物','水电','娱乐','医疗','学习','日用品','其他支出']
+};
+let data={entries:[],goal:10000};
+let currentType='收入';
+let editingId=null;
+
+function load(){
+ try{
+  const raw=localStorage.getItem(KEY);
+  if(raw){const parsed=JSON.parse(raw);if(Array.isArray(parsed.entries))data.entries=parsed.entries;if(Number(parsed.goal)>0)data.goal=Number(parsed.goal);}
+ }catch(e){alert('读取本地数据失败，请检查浏览器存储设置。');}
+}
+function persist(){localStorage.setItem(KEY,JSON.stringify(data));}
+function money(n){return '¥'+Number(n||0).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function setType(type){
+ currentType=type;
+ document.getElementById('incomeBtn').classList.toggle('active',type==='收入');
+ document.getElementById('expenseBtn').classList.toggle('active',type==='支出');
+ const c=document.getElementById('category');c.innerHTML='';
+ categories[type].forEach(x=>c.add(new Option(x,x)));
+}
+function refreshFilter(){
+ const s=document.getElementById('filterCategory'),old=s.value;
+ s.innerHTML='<option value="全部">全部分类</option>';
+ [...categories.收入,...categories.支出].forEach(x=>s.add(new Option(x,x)));
+ if([...s.options].some(o=>o.value===old))s.value=old;
+}
+function saveEntry(){
+ const amount=Number(document.getElementById('amount').value);
+ const date=document.getElementById('date').value;
+ if(!Number.isFinite(amount)||amount<=0){alert('请输入大于0的有效金额');return;}
+ if(!date){alert('请选择日期');return;}
+ const item={id:editingId||String(Date.now())+Math.random(),type:currentType,amount,category:document.getElementById('category').value,note:document.getElementById('note').value.trim(),date};
+ if(editingId){const i=data.entries.findIndex(x=>x.id===editingId);if(i>=0)data.entries[i]=item;}
+ else data.entries.unshift(item);
+ persist();cancelEditing();render();
+ alert('保存成功！');
+}
+function editEntry(id){
+ const x=data.entries.find(e=>e.id===id);if(!x)return;
+ editingId=id;setType(x.type);
+ document.getElementById('amount').value=x.amount;
+ document.getElementById('category').value=x.category;
+ document.getElementById('note').value=x.note||'';
+ document.getElementById('date').value=x.date;
+ document.getElementById('saveBtn').textContent='保存修改';
+ document.getElementById('cancelEdit').classList.remove('hidden');
+ document.querySelector('#saveBtn').scrollIntoView({behavior:'smooth',block:'center'});
+}
+function cancelEditing(){
+ editingId=null;
+ document.getElementById('amount').value='';
+ document.getElementById('note').value='';
+ document.getElementById('date').value=today();
+ document.getElementById('saveBtn').textContent='保存这笔账目';
+ document.getElementById('cancelEdit').classList.add('hidden');
+ setType('收入');
+}
+function deleteEntry(id){
+ if(!confirm('确定删除这笔账目吗？删除后无法自动恢复。'))return;
+ data.entries=data.entries.filter(x=>x.id!==id);persist();render();
+}
+function setGoal(){
+ const v=prompt('请输入你的存钱目标金额（元）：',data.goal);
+ if(v===null)return;
+ const n=Number(v);
+ if(!Number.isFinite(n)||n<=0){alert('请输入大于0的金额');return;}
+ data.goal=n;persist();render();
+}
+function render(){
+ const month=document.getElementById('month').value;
+ const list=data.entries.filter(x=>x.date&&x.date.startsWith(month));
+ const inc=list.filter(x=>x.type==='收入').reduce((s,x)=>s+x.amount,0);
+ const out=list.filter(x=>x.type==='支出').reduce((s,x)=>s+x.amount,0);
+ document.getElementById('totalIn').textContent=money(inc);
+ document.getElementById('totalOut').textContent=money(out);
+ document.getElementById('balance').textContent=money(inc-out);
+ document.getElementById('goalText').textContent=money(data.goal);
+ const total=data.entries.reduce((s,x)=>s+(x.type==='收入'?x.amount:-x.amount),0);
+ const saved=Math.max(0,total),pct=Math.min(100,saved/data.goal*100);
+ document.getElementById('goalProgress').textContent='已存 '+money(saved);
+ document.getElementById('goalPercent').textContent=pct.toFixed(1)+'%';
+ document.getElementById('goalBar').style.width=pct+'%';
+ const type=document.getElementById('filterType').value,cat=document.getElementById('filterCategory').value;
+ const shown=list.filter(x=>(type==='全部'||x.type===type)&&(cat==='全部'||x.category===cat)).sort((a,b)=>b.date.localeCompare(a.date));
+ const el=document.getElementById('entries');
+ if(!shown.length){el.innerHTML='<div class="empty">🌱 这个月还没有账目<br>记下第一笔收支吧！</div>';return;}
+ el.innerHTML=shown.map(x=>{
+  const sign=x.type==='收入'?'+':'-';
+  const emoji={'工资':'💼','奖金':'🎁','兼职':'🧑‍💻','红包':'🧧','餐饮':'🍜','房租':'🏠','交通':'🚌','购物':'🛍️','水电':'💡','娱乐':'🎮','医疗':'💊','学习':'📚','日用品':'🧴'}[x.category]||'💰';
+  return `<div class="entry"><div class="entryleft"><div class="emoji">${emoji}</div><div><div class="entryname">${escapeHtml(x.category)}${x.note?' · '+escapeHtml(x.note):''}</div><div class="entrydate">${x.date}</div></div></div><div class="entryright"><div class="amount ${x.type==='收入'?'income':'expense'}">${sign}${money(x.amount)}</div><div class="actions"><button onclick="editEntry('${x.id}')">编辑</button><button onclick="deleteEntry('${x.id}')">删除</button></div></div></div>`;
+ }).join('');
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function exportData(){
+ const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+ const url=URL.createObjectURL(blob),a=document.createElement('a');
+ a.href=url;a.download='我的小金库备份_'+today()+'.json';a.click();URL.revokeObjectURL(url);
+}
+function importData(event){
+ const file=event.target.files[0];if(!file)return;
+ const reader=new FileReader();
+ reader.onload=()=>{
+  try{
+   const obj=JSON.parse(reader.result);
+   if(!obj||!Array.isArray(obj.entries)||!obj.entries.every(x=>x&&['收入','支出'].includes(x.type)&&Number(x.amount)>0&&x.date&&x.category)){
+    throw new Error('备份格式不正确');
+   }
+   if(!confirm('导入将替换当前设备的全部账目，建议先导出当前备份。确定继续吗？'))return;
+   data={entries:obj.entries,goal:Number(obj.goal)>0?Number(obj.goal):10000};
+   persist();render();alert('备份恢复成功！');
+  }catch(e){alert('导入失败：'+e.message);}
+  finally{event.target.value='';}
+ };
+ reader.readAsText(file);
+}
+load();
+document.getElementById('month').value=today().slice(0,7);
+document.getElementById('month').addEventListener('change',render);
+document.getElementById('date').value=today();
+setType('收入');refreshFilter();render();
+</script>
+</body>
+</html>
